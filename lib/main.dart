@@ -5,8 +5,17 @@ import 'providers/auth_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/auth/forgot_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'services/firebase_messaging.dart';
+import 'firebase_options.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform, // <- ADD THIS!
+  );
+  await FirebaseMessagingService.initialize();
   await dotenv.load(fileName: '.env');
   runApp(const DialyEaseApp());
 }
@@ -37,6 +46,7 @@ class DialyEaseApp extends StatelessWidget {
           ),
           '/login': (ctx) => const LoginScreen(),
           '/register': (ctx) => const RegisterScreen(),
+          '/forgot': (ctx) => const ForgotScreen(),
           '/home': (ctx) => const HomeScreen(),
         },
       ),

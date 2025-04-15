@@ -1,3 +1,4 @@
+import 'package:dialyease_patient/screens/auth/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -74,12 +75,6 @@ class HomeScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigate to appointment booking
-                      },
-                      child: const Text('Book Appointment'),
-                    ),
                   ],
                 ),
               ),
@@ -94,6 +89,7 @@ class HomeScreen extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 12),
+            
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -124,7 +120,13 @@ class HomeScreen extends StatelessWidget {
                   context,
                   icon: Icons.person,
                   label: 'Profile',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

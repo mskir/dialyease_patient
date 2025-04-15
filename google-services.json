@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "404065412028",
+    "project_id": "dialyease-e42ac",
+    "storage_bucket": "dialyease-e42ac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404065412028:android:080c081847553d557f01b9",
+        "android_client_info": {
+          "package_name": "trust.dialyease"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBs0kABmgA-eruVjNAdD6fDdTFoK6_5ars"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
