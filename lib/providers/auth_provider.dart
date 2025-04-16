@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import 'dart:developer' as developer;
+
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+
 import '../models/patient.dart';
 import '../services/auth_service.dart';
 import '../api/auth_api.dart';
-import 'package:http/http.dart' as http;
 
 class AuthProvider with ChangeNotifier {
   Patient? _patient;
@@ -16,7 +19,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> autoLogin() async {
     final token = await AuthService.getToken();
     final patient = await AuthService.getPatient();
-    
+
     if (token != null && patient != null) {
       _token = token;
       _patient = patient;
@@ -25,82 +28,76 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> login(String email, String password) async {
-  try {
-    print("Logging in with email: $email"); 
+    try {
+      developer.log("Attempting login with email: $email");
 
-    final response = await AuthApi.loginPatient({
-      'email': email,
-      'password': password,
-    });
+      final response = await AuthApi.loginPatient({
+        'email': email,
+        'password': password,
+      });
 
-    print("Response status: ${response.statusCode}"); 
-    print("Raw response body: ${response.body}"); 
+      developer.log("Login response: ${response.statusCode} ${response.body}");
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      _patient = Patient.fromJson(responseData['patient']); 
-      _token = responseData['token'];
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        _patient = Patient.fromJson(responseData['patient']);
+        _token = responseData['token'];
 
-      await AuthService.saveAuthData(_token!, _patient!);
-      notifyListeners();
-    } else {
-      final errorData = json.decode(response.body);
-      throw errorData['message'] ?? 'Login failed';
+        await AuthService.saveAuthData(_token!, _patient!);
+        notifyListeners();
+      } else {
+        final errorData = json.decode(response.body);
+        throw errorData['message'] ?? 'Login failed';
+      }
+    } catch (e) {
+      developer.log("Login error", error: e);
+      rethrow;
     }
-  } catch (e) {
-    print("Login error: $e");
-    rethrow;
   }
-}
-
 
   Future<void> register(Map<String, dynamic> data) async {
-  try {
-    final registrationData = Map<String, dynamic>.from(data);
-    registrationData.remove('confirmPassword');
+    try {
+      final registrationData = {
+        for (var entry in data.entries)
+          if (entry.key != 'confirmPassword') entry.key: entry.value,
+      };
 
-    print("Sending: ${json.encode(registrationData)}"); 
+      developer.log("Registering patient: ${json.encode(registrationData)}");
 
-    final response = await AuthApi.registerPatient(registrationData);
-    
-    print("Response status: ${response.statusCode}"); 
-    print("Raw response body: ${response.body}"); 
+      final response = await AuthApi.registerPatient(registrationData);
 
-    if (response.statusCode == 201) {
-      final responseData = json.decode(response.body);
-      
-      // Validate response format
-      if (responseData['patient'] == null || responseData['token'] == null) {
-        throw 'Invalid server response format';
+      developer.log("Register response: ${response.statusCode} ${response.body}");
+
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+
+        if (responseData['patient'] == null || responseData['token'] == null) {
+          throw 'Invalid server response format';
+        }
+
+        _patient = Patient.fromJson(responseData['patient']);
+        _token = responseData['token'];
+
+        await AuthService.saveAuthData(_token!, _patient!);
+        notifyListeners();
+      } else {
+        final errorMessage = _handleErrorResponse(response);
+        throw errorMessage;
       }
-
-      print("Parsed response: $responseData"); 
-
-      _patient = Patient.fromJson(responseData['patient']);
-      _token = responseData['token'];
-
-      await AuthService.saveAuthData(_token!, _patient!);
-      notifyListeners();
-    } else {
-      // Handle error responses
-      final errorMessage = _handleErrorResponse(response);
-      throw errorMessage;
+    } catch (e) {
+      developer.log("Registration error", error: e);
+      rethrow;
     }
-  } catch (e) {
-    print("Registration error: $e"); 
-    rethrow;
   }
-}
 
-// Error handling function
-String _handleErrorResponse(http.Response response) {
-  try {
-    final errorData = json.decode(response.body);
-    return errorData['message'] ?? 'Registration failed (${response.statusCode})';
-  } catch (_) {
-    return 'Server returned an invalid response (${response.statusCode})';
+  String _handleErrorResponse(http.Response response) {
+    try {
+      final errorData = json.decode(response.body);
+      return errorData['message'] ?? 'Error (${response.statusCode})';
+    } catch (_) {
+      return 'Unexpected response format (${response.statusCode})';
+    }
   }
-}
 
   Future<void> logout() async {
     await AuthService.clearAuthData();

@@ -81,8 +81,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 CustomTextField(
-                  label: 'Name',
+                  label: 'First Name',
                   onSaved: (value) => _patientData['firstName'] = value!,
+                  validator: (value) => value!.isEmpty ? 'Required' : null,
+                ),
+                CustomTextField(
+                  label: 'Last Name',
+                  onSaved: (value) => _patientData['lastName'] = value!,
                   validator: (value) => value!.isEmpty ? 'Required' : null,
                 ),
                 CustomTextField(
@@ -141,7 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     'Sign Up',
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
                       fontSize: 16,
                     ),
                   ),
